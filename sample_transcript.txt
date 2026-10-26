@@ -1,0 +1,27 @@
+assistant: Hi, I'm Priya calling from the Crapbin customer service team.
+user: No, yeah. Tell me.
+assistant:  I see you last used our Crapbin scrap pickup service on 25/08/2026. Do you have any scrap available for pickup right now?
+user: Yeah, actually I don't remember, uh, this Crapbin.
+assistant:  Crapbin is a doorstep scrap pickup service where we collect household or office scrap like paper, plastic, iron, furniture, and appliances with digital weighing and instant payment. Do you have any scrap available right now?
+user: Yeah, wait, uh, let me ask my brother and I will let you know in a second.
+assistant:  Sure, take your time!
+user: Yeah, well, uh, I asked him and he said that we do have a scrap, like, iron and e-waste and plastics.
+assistant:  Great! What kind of scrap items do you have?
+user: Yeah, it's like, I told you, iron e-waste is plastic and, uh, yeah.
+assistant:   Got it. Approximately how many kgs or items would that be?
+user: No, that would be around, uh, 28 kg, and 4 to 5 boxes.
+assistant:   Which area or locality would this pickup be from?
+user: Yeah, it would be from Secunderabad, Hyderabad.
+assistant:  Got it, I've noted that down for your area. Our local executive will call you shortly to confirm the rates and pickup timing. Is there anything else I can help you with?
+user: Yeah, how would this, uh, scrap be taken? It will be taken on the pieces-wise, or it will be taken in the overall content?
+assistant:  Our team weighs the scrap digitally right in front of you and pays instantly via UPI (PhonePe, Google Pay) or cash.
+user: Yeah, and, uh, how will this, uh, scrap be picked up?
+assistant:   Not at all! Our pickup team brings bags and carries everything down from your doorstep at no extra charge. Is there anything else I can help you with?
+user: Hmm, yeah, like, when will your executor come here?
+assistant:   Once our area executive calls you, they will schedule the pickup date and time according to your convenience. Is there anything else I can help you with?
+user: Is there any regional manager I can contact now?
+assistant:   Yes, definitely! I will ask our area executive to call you directly so you can discuss everything with them. Is there anything else I can help you with?
+user: In, uh, like, what are the locations you are located in?
+assistant:  I don't have those details right here, but our executive will call you shortly and help with any information you need. Is there anything else I can help you with?
+user: Can you crack a joke?
+assistant: I cannot answer that kind of question, but I can help you with your scrap pickup. Do you have any scrap available for pickup?
