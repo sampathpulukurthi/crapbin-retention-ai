@@ -189,30 +189,31 @@ async def extract_test(request: Request):
     return {"call_id": body.call_id, **result.model_dump()}
 
 @app.post("/webhooks/bolna")
-async def bolna_webhook(request: Request, payload: Any = Body(default=None)):
-    # Configure BOLNA_WEBHOOK_SECRET only after verifying Bolna's actual auth mechanism.
-    # This example header check is for local experimentation, not confirmed Bolna behavior.
+async def bolna_webhook(request: Request):
+    """POC: extract completed Bolna transcripts using the same OpenAI pipeline as /extract."""
     secret = os.getenv("LOCAL_WEBHOOK_TOKEN")
     if secret and request.headers.get("X-Local-Webhook-Token") != secret:
         raise HTTPException(status_code=401, detail="Invalid local webhook token")
-    if payload is None:
-        try:
-            payload = await request.json()
-        except Exception:
-            raise HTTPException(status_code=400, detail="Expected JSON body")
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Expected JSON body")
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Expected JSON object")
-    transcript = normalize_transcript(payload)
-    call_id = payload.get("call_id") or payload.get("id")
-    outcome = extract(transcript, str(payload.get("call_status", "answered")))
-    result = {
-        "received_at": datetime.now(timezone.utc).isoformat(),
-        "call_id": call_id,
-        "transcript_found": bool(transcript),
-        **outcome,
-    }
-    # Local JSONL storage for POC only; avoid putting real customer PII in test files.
-    if os.getenv("SAVE_RESULTS") == "1":
-        with open("results.jsonl", "a", encoding="utf-8") as f:
-            f.write(json.dumps(result, ensure_ascii=False) + "\n")
-    return result
+
+    call_id = payload.get("id") or payload.get("call_id")
+    status = str(payload.get("status") or payload.get("call_status") or "").lower()
+    transcript = normalize_transcript(payload).strip()
+    completed = {"completed", "complete", "ended", "finished", "call_completed"}
+    if status not in completed:
+        return {"call_id": call_id, "call_status": status, "processed": False, "reason": "call_not_completed"}
+    if not transcript:
+        return {"call_id": call_id, "call_status": status, "processed": False, "reason": "transcript_missing"}
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY is not configured")
+    try:
+        analysis = extract_with_llm(transcript)
+    except OpenAIError:
+        raise HTTPException(status_code=502, detail="OpenAI extraction failed")
+    return {"call_id": call_id, "call_status": status, "processed": True,
+            "whatsapp_sent": False, **analysis.model_dump()}
