@@ -4,6 +4,8 @@ from typing import Any, Literal
 import re
 import os
 import json
+import hashlib
+from pathlib import Path
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
@@ -209,11 +211,28 @@ async def bolna_webhook(request: Request):
         return {"call_id": call_id, "call_status": status, "processed": False, "reason": "call_not_completed"}
     if not transcript:
         return {"call_id": call_id, "call_status": status, "processed": False, "reason": "transcript_missing"}
+    # Store only structured extraction, not the raw transcript or webhook payload.
+    # Hash provider IDs for safe filenames; never trust IDs as filesystem paths.
+    if not isinstance(call_id, str) or not call_id.strip():
+        raise HTTPException(status_code=422, detail="Completed call requires an execution ID")
+    output_dir = Path(__file__).resolve().parent / "data" / "extractions"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / (hashlib.sha256(call_id.encode("utf-8")).hexdigest() + ".json")
+    if output_file.exists():
+        return json.loads(output_file.read_text(encoding="utf-8"))
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY is not configured")
     try:
         analysis = extract_with_llm(transcript)
     except OpenAIError:
         raise HTTPException(status_code=502, detail="OpenAI extraction failed")
-    return {"call_id": call_id, "call_status": status, "processed": True,
-            "whatsapp_sent": False, **analysis.model_dump()}
+    result = {"call_id": call_id, "call_status": status, "processed": True,
+              "whatsapp_sent": False, **analysis.model_dump()}
+    # Exclusive create prevents accidental overwrite on repeated webhook delivery.
+    try:
+        with output_file.open("x", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+    except FileExistsError:
+        return json.loads(output_file.read_text(encoding="utf-8"))
+    return result
